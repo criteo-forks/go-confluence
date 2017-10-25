@@ -3,7 +3,6 @@ package confluence
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
@@ -117,8 +116,6 @@ func (w *Wiki) internalCreateOrUpdateContent(content *Content, contentEndPoint *
 	if err != nil {
 		return nil, nil, err
 	}
-
-	fmt.Printf("sending to %s: %v\n", contentEndPoint.String(), string(jsonBody))
 
 	req, err := http.NewRequest(method, contentEndPoint.String(), bytes.NewReader(jsonBody))
 	req.Header.Add("Content-Type", "application/json")
