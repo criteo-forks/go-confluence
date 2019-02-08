@@ -41,12 +41,37 @@ func (w *Wiki) existingContentEndpoint(contentID string) (*url.URL, error) {
 	return url.ParseRequestURI(w.endPoint.String() + "/content/" + contentID)
 }
 
+func (w *Wiki) newLabelEndpoint(contentID string) (*url.URL, error) {
+	return url.ParseRequestURI(w.endPoint.String() + "/content/" + contentID + "/label")
+}
+
 func (w *Wiki) newContentEndpoint() (*url.URL, error) {
 	return url.ParseRequestURI(w.endPoint.String() + "/content")
 }
 
 func (w *Wiki) contentChildrenPagesEndpoint(contentID string) (*url.URL, error) {
 	return url.ParseRequestURI(w.endPoint.String() + "/content/" + contentID + "/child/page")
+}
+
+func (w *Wiki) AddLabel(contentID, label string) error {
+	newLabelEndPoint, err := w.newLabelEndpoint(contentID)
+	if err != nil {
+		return err
+	}
+
+	jsonBody := `[{"prefix": "global","name": "` + label + `"}]`
+
+	req, err := http.NewRequest("POST", newLabelEndPoint.String(), bytes.NewReader([]byte(jsonBody)))
+	if err != nil {
+		return err
+	}
+	req.Header.Add("Content-Type", "application/json")
+
+	_, err = w.sendRequest(req)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (w *Wiki) DeleteContent(contentID string) error {
