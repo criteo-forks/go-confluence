@@ -24,7 +24,7 @@ type ContentResult struct {
 }
 
 type GenericResults struct {
-	Start int `json:"size"`
+	Start int `json:"start"`
 	Limit int `json:"limit"`
 	Size  int `json:"size"`
 }
@@ -43,9 +43,14 @@ func (w *Wiki) searchEndpoint() (*url.URL, error) {
 }
 
 func (w *Wiki) Search(cql, cqlContext string, expand []string, limit int) (*SearchResults, error) {
+	results, _, err := w.SearchWithResponse(cql, cqlContext, expand, limit)
+	return results, err
+}
+
+func (w *Wiki) SearchWithResponse(cql, cqlContext string, expand []string, limit int) (*SearchResults, []byte, error) {
 	searchEndPoint, err := w.searchEndpoint()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	data := url.Values{}
 	data.Set("expand", strings.Join(expand, ","))
@@ -55,19 +60,19 @@ func (w *Wiki) Search(cql, cqlContext string, expand []string, limit int) (*Sear
 
 	req, err := http.NewRequest("GET", searchEndPoint.String(), nil)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 
 	}
 	res, err := w.sendRequest(req)
 	if err != nil {
-		return nil, err
+		return nil, res, err
 	}
 
 	var results SearchResults
 	err = json.Unmarshal(res, &results)
 	if err != nil {
-		return nil, err
+		return nil, res, err
 	}
 
-	return &results, nil
+	return &results, res, nil
 }
